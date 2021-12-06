@@ -1,0 +1,9 @@
+.bsp/
+.cache/
+.idea/
+./*/target/
+target/
+
+# for AWS SAM cli
+packaged.yaml
+.aws-sam/

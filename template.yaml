@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Transform: AWS::Serverless-2016-10-31
+
+Description: >-
+  tapir-aws-lambda-native application.
+  written in Scala, compiled by GraalVM native compiler, runs on Lambda custom runtime.
+
+Resources:
+  Api:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      AccessLogSettings:
+        DestinationArn: !GetAtt AccessLogs.Arn
+        Format: $context.requestId
+      FailOnWarnings: true
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: tapir-aws-native-lambda-function
+      Description: tapir-aws-native-lambda-function
+      Runtime: provided.al2
+      Handler: bootstrap
+      CodeUri: lambda-native/target/native-image/
+      MemorySize: 512
+      Timeout: 15
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Method: GET
+            Path: /api/ping
+  AccessLogs:
+    Type: AWS::Logs::LogGroup
+
+Outputs:
+  Api:
+    Description: "API endpoint URL for Prod environment"
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.${AWS::URLSuffix}/"
+  Function:
+    Value: !GetAtt Function.Arn
+  FunctionIamRole:
+    Value: !GetAtt FunctionRole.Arn
+
